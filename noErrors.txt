@@ -1,0 +1,9 @@
+ program MiPrograma
+ begin  
+    int a = 10 
+    int b = 20
+    int a 
+    float d = 2
+    int c 
+    c = a + b
+end

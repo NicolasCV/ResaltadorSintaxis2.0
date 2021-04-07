@@ -1,0 +1,7 @@
+elif programBegun==True and prev==getChar(i):
+                myFile.write('<br>')
+                myFile.write('<span class=indent></span>')
+
+elif getChar(i)=="ID" and prev=="NUM":
+                myFile.write('<br>')
+                myFile.write('<span class=indent></span>')
