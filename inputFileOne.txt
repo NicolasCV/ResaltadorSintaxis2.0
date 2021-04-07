@@ -1,18 +1,9 @@
  program MiPrograma123
  begin   
-    int a1 = 10
-    int b = 20
-    int d = 1.2
     int a
-    a
-    int der
-    der = 1
-    int HolaToriva
-    int a = ( 1 + 1 ) * 1
-    #prob
-    float c 
-    float a = 1.2
-    float d = 1. 2
-    c = a + 1
-    c = 1 + 1
+    int b2
+    int carrito
+    a = 10
+    b = 2
+    c = (12+1)*5
 end
