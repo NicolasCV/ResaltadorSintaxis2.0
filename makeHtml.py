@@ -64,6 +64,36 @@ def getChar(stringC):
     else:
         return "ERROR"
 
+#Funciones para el parser
+
+def match():
+    ''
+
+def stmt():
+    ''
+
+def expr():
+    ''
+
+def exprRest():
+    ''
+    #START=>PROGRAM ID BEING CODE END
+    #CODE->VAR CODE
+    #CODE->ASSIGNMENT CODE
+    #CODE->E
+    #VAR->TYPE ID
+    #TYPE-> "INT","FLOAT"
+    #ASSIGNMENT-> ID = EXPR
+    #EXPR -> OPERAND EXPR_REST
+    #EXPR_REST-> + OPERAND EXPREST | - OPERAND EXPR_REST | * OPERAND EXPR_REST | / OPERAND EXPR_REST
+    #EXPR_REST->E
+    #OPERAND -> NUM | ID
+    #OPERAND -> (EXPR)
+
+
+
+
+
 #Parser que lanza error si esta mal el formato
 def parser():
     ''
