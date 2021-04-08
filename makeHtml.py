@@ -66,29 +66,30 @@ def inputFile(filename):
     for x in EXPfs:
         tokenList.append(getCharType(x))
 
+    
     EXPfile.flush()
     EXPfile.close()
 
 #Funciones para el parser
-counter = 0
-
 def ParseError():
     global ParsingError
     ParsingError = True
 
 def nextToken():
-    global tokenList,counter,tok
+    global counter,tok,tokenList
     counter+=1
-    return tokenList[counter-1]
+    tok = tokenList[counter-1]
 
-def match(token):
-    global tok
-    if tok == token:
-        tok = nextToken()
+def match(*args):
+    global tok,counter
+    print(args)
+    if tok in args:
+        nextToken()
     else:
         ParseError()
 
 def exprRest():
+    global ParsingError,tok
     #START=>PROGRAM ID BEING CODE END
     #CODE->VAR CODE
     #CODE->ASSIGNMENT CODE 
@@ -98,29 +99,56 @@ def exprRest():
     #ASSIGNMENT-> ID = EXPR
     #EXPR -> OPERAND EXPR_REST
     #EXPR_REST-> + OPERAND EXPREST | - OPERAND EXPR_REST | * OPERAND EXPR_REST | / OPERAND EXPR_REST
-    '''
-    if getCharType(tok)=="+":
-        if nextTok() == OPERAND 
+    
+    if getCharType(tok) in ["INT","FLOAT"]:
+        match(["INT,FLOAT"])
+        match(["ID"])
+        exprRest()
+
+    elif getCharType(tok) in ["EQUAL"]:
+        match(["EQUAL"])
+        match(["ID","NUM","PARENTHESES"])
+        exprRest()
+    
+    elif getCharType(tok) == "NUM":
+        match(["NUM"])
+        exprRest()
+
+    elif getCharType(tok) == "ID":
+        match(["ID"])
+        match(["="])
+        exprRest()
+
+    elif getCharType(tok) == "PARENTHESES":
+        match(["PARENTHESES"])
+        match(["+","/","-","*","ID","NUM"])
+        exprRest()
+
+    elif getCharType(tok) in ["+","/","-","*"]:
+        match(["+","/","-","*"])
+        match(["ID","NUM"])
+        exprRest()
+    
+    elif getattr(tok) == "END":
+        ''
+
     else:
-        '''
+        ParsingError=True
+
     #EXPR_REST->E
     #OPERAND -> NUM | ID
     #OPERAND -> (EXPR)
 
-def expr():
-    match("NUM")
-    exprRest()
-
 def stmt():
-    match("PROGRAM")
-    match("ID")
-    match("BEGIN")
-    expr()
+    match(["PROGRAM"])
+    match(["ID"])
+    match(["BEGIN"])
+    exprRest()
 
 #Parser que lanza error si esta mal el formato
 def parse():
     global tok
-    tok = nextToken()
+    nextToken()
     stmt()
     match('END')
 
@@ -191,6 +219,10 @@ def output():
  
 
 inputFile("inputFileOne.txt")
+counter = 0
+tok=""
+parse()
+
 output()
 
 
