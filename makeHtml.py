@@ -30,8 +30,11 @@ def getCharType(stringC):
     elif stringC == "/":
         return "DIVIDE"
     
-    elif stringC in ["(",")"]:
-        return "PARENTHESES"
+    elif stringC == "(":
+        return "O_PARENTHESES"
+    
+    elif stringC == ")":
+        return "C_PARENTHESES"
 
     elif stringC == "=":
         return "EQUAL"
@@ -79,7 +82,8 @@ def ParseError(tok):
     global ParsingError,counter,tokenList
     ParsingError = True
     tokenList[counter-1]="FormatERROR"
-    print("Error in token:",tok,"["+str(counter)+"]")
+    tokenList[counter-2]="FormatERROR"
+    print("Error in token:",tok,"["+str(counter-1)+"]")
 
 def nextToken():
     global counter,tok,tokenList
@@ -88,7 +92,7 @@ def nextToken():
 
 def match(tokens):
     global tok,counter
-    print(counter-1,tok)
+    print(counter-1,tok,tokens)
 
     if tok in tokens:
         nextToken()
@@ -97,65 +101,74 @@ def match(tokens):
 
 def exprRest():
     global ParsingError,tok
-    #CODE->VAR CODE
-    #CODE->ASSIGNMENT CODE 
-    #CODE->E
-    #VAR->TYPE ID
-    #TYPE-> "INT","FLOAT"
-    #ASSIGNMENT-> ID = EXPR
-    #EXPR -> OPERAND EXPR_REST
-    #EXPR_REST-> + OPERAND EXPREST | - OPERAND EXPR_REST | * OPERAND EXPR_REST | / OPERAND EXPR_REST
+    
     if not ParsingError:
 
+        #CODE->VAR CODE
         if tok in ["INT","FLOAT"]:
             match(["INT","FLOAT"])
             match(["ID"])
-            match(["INT","FLOAT","ID"])
             exprRest()
         
+        #VAR->TYPE ID
+        #TYPE-> "INT","FLOAT"
         elif tok == "NUM":
             match(["NUM"])
+            match(["PLUS","DIVIDE","MINUS","ASTER","C_PARENTHESES","ID","END"])
             exprRest()
 
         elif tok == "ID":
             match(["ID"])
+            match(["ID","EQUAL","END"])
+            exprRest()
+
+        #CODE->ASSIGNMENT CODE 
+        #ASSIGNMENT-> ID = EXPR
+        elif tok == "EQUAL":
             match(["EQUAL"])
-            match(["NUM","ID","PARENTHESES"])
+            match(["NUM","ID","O_PARENTHESES"])
             exprRest()
 
-        elif tok == "PARENTHESES":
-            print("par")
-            match(["PARENTHESES"])
-            match(["PLUS","DIVIDE","MINUS","ASTER","ID","NUM"])
+
+        #El parentesis que abre es diferente la que cierra
+        elif tok == "O_PARENTHESES":
+            match(["O_PARENTHESES"])
+            match(["ID","NUM"])
             exprRest()
 
-        elif tok in ["PLUS","DIVIDE","MINUS","ASTER","ID","NUM"]:
-            match(["PLUS","DIVIDE","MINUS","ASTER","ID","NUM"])
+        elif tok == "C_PARENTHESES":
+            match(["C_PARENTHESES"])
+            match(["PLUS","DIVIDE","MINUS","ASTER","ID","INT","END"])
+            exprRest()
+        
+        #EXPR_REST-> + OPERAND EXPREST | - OPERAND EXPR_REST | * OPERAND EXPR_REST | / OPERAND EXPR_REST
+        #EXPR_REST->E
+        #OPERAND -> NUM | ID
+        #OPERAND -> (EXPR)
+        #EXPR -> OPERAND EXPR_REST
+        elif tok in ["PLUS","DIVIDE","MINUS","ASTER"]:
+            match(["PLUS","DIVIDE","MINUS","ASTER"])
             match(["ID","NUM"])
             exprRest()
 
         elif tok == "ERROR":
-            match("ERROR")
+            match(["ERROR"])
             exprRest()
         
-        elif tok == "END":
-            ""
+        elif tok == ["EOF"]:
+            ''
 
-        else:
-            ParsingError=True
     else:
         print("ERROR")
-    #EXPR_REST->E
-    #OPERAND -> NUM | ID
-    #OPERAND -> (EXPR)
+    
 
 def stmt():
     #START=>PROGRAM ID BEING CODE END
+    #CODE->E
     match("PROGRAM")
     match("ID")
     match("BEGIN")
     exprRest()
-    match("END")
 
 #Parser que lanza error si esta mal el formato
 def parse():

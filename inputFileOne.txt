@@ -1,9 +1,11 @@
  program MiPrograma123
  begin   
-    int a 1
+    int a
     int b2
+    a = ( 1 + 1 )
     int carrito
     a = 10
-    b = 2
+    b = 2 + a
     c = ( 12 + 1 ) * 5
+    d = 1
 end
