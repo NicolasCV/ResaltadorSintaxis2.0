@@ -99,6 +99,42 @@ def match(tokens):
     else:
         ParseError(tok)
 
+def variable():
+    match(["INT","FLOAT"])
+    match(["ID"])
+
+def operand():
+    match(["PLUS","DIVIDE","MINUS","ASTER"])
+    match(["ID","NUM"])
+
+def expression():
+    #Opened es la variable de abrir
+    global tok,opened
+    
+    if tok == "O_PARENTHESES":
+        match("O_PARENTHESES")
+        opened = True
+        expression()
+    else:
+        match(["NUM","ID"])
+        if tok in ["PLUS","DIVIDE","MINUS","ASTER"]:
+            operand()
+
+        if tok == "C_PARENTHESES" and opened:
+            match("C_PARENTHESES")
+            opened = False
+
+
+def assignment():
+    global opened
+    
+    match(["ID"])
+    match(["EQUAL"])
+    expression()
+    if opened:
+        ParseError("OPENED PARENTHESES NOT CLOSED")
+
+
 def exprRest():
     global ParsingError,tok
     
@@ -106,49 +142,21 @@ def exprRest():
 
         #CODE->VAR CODE
         if tok in ["INT","FLOAT"]:
-            match(["INT","FLOAT"])
-            match(["ID"])
+            variable()
             exprRest()
         
         #VAR->TYPE ID
         #TYPE-> "INT","FLOAT"
         elif tok == "NUM":
-            match(["NUM"])
-            match(["PLUS","DIVIDE","MINUS","ASTER","C_PARENTHESES","ID","END"])
+            expression()
             exprRest()
 
         elif tok == "ID":
-            match(["ID"])
-            match(["ID","EQUAL","END"])
+            assignment()
             exprRest()
 
-        #CODE->ASSIGNMENT CODE 
-        #ASSIGNMENT-> ID = EXPR
-        elif tok == "EQUAL":
-            match(["EQUAL"])
-            match(["NUM","ID","O_PARENTHESES"])
-            exprRest()
-
-
-        #El parentesis que abre es diferente la que cierra
-        elif tok == "O_PARENTHESES":
-            match(["O_PARENTHESES"])
-            match(["ID","NUM"])
-            exprRest()
-
-        elif tok == "C_PARENTHESES":
-            match(["C_PARENTHESES"])
-            match(["PLUS","DIVIDE","MINUS","ASTER","ID","INT","END"])
-            exprRest()
-        
-        #EXPR_REST-> + OPERAND EXPREST | - OPERAND EXPR_REST | * OPERAND EXPR_REST | / OPERAND EXPR_REST
-        #EXPR_REST->E
-        #OPERAND -> NUM | ID
-        #OPERAND -> (EXPR)
-        #EXPR -> OPERAND EXPR_REST
         elif tok in ["PLUS","DIVIDE","MINUS","ASTER"]:
-            match(["PLUS","DIVIDE","MINUS","ASTER"])
-            match(["ID","NUM"])
+            operand()
             exprRest()
 
         elif tok == "ERROR":
