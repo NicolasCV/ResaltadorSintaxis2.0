@@ -98,6 +98,23 @@ def lexer(stringC):
     EOS = int(10)
     UNKNOWN = int(-1)
 
+
+    ST_INITIAL = int(0)
+    ST_ID = int(1)
+    ST_DIGIT = int(2)
+    ST_1ST_DIGIT = int(3)
+    ST_NEXT_DIGITS = int(4)
+    ST_F_ID = int(100)
+    ST_F_INT = int(101)
+    ST_F_FLOAT = int(102)
+    ST_F_PLUS_SIGN = int(103)
+    ST_F_MULT_SIGN = int(104)
+    ST_F_LEFT_PAR = int(105)
+    ST_F_RIGHT_PAR = int(106)
+    ST_F_EQUAL = int(107)
+    ST_F_MINUS_SIGN = int(108)
+    ST_ERROR = int(-1)
+
     def getCharType(c):
 
         if c.isalpha(): 
@@ -138,23 +155,6 @@ def lexer(stringC):
         
         return UNKNOWN
 
-
-    ST_INITIAL = int(0)
-    ST_ID = int(1)
-    ST_DIGIT = int(2)
-    ST_1ST_DIGIT = int(3)
-    ST_NEXT_DIGITS = int(4)
-    ST_F_ID = int(100)
-    ST_F_INT = int(101)
-    ST_F_FLOAT = int(102)
-    ST_F_PLUS_SIGN = int(103)
-    ST_F_MULT_SIGN = int(104)
-    ST_F_LEFT_PAR = int(105)
-    ST_F_RIGHT_PAR = int(106)
-    ST_F_EQUAL = int(107)
-    ST_F_MINUS_SIGN = int(108)
-    ST_ERROR = int(-1)
-
     texts=[]
 
     transitionMatrix = [[ST_ID,ST_DIGIT,ST_ERROR,ST_F_PLUS_SIGN,ST_F_MULT_SIGN,ST_F_LEFT_PAR,ST_F_RIGHT_PAR,ST_F_EQUAL,ST_F_MINUS_SIGN,ST_INITIAL,ST_INITIAL],
@@ -184,7 +184,7 @@ def lexer(stringC):
             charType = getCharType(currentChar)
             state = transitionMatrix[state][charType]
 
-            if state < 100 and charType != SPACE:
+            if state < 100 and charType != SPACE and charType!=EOS:
                 lexeme+=currentChar
 
         if lexeme != "":
@@ -274,8 +274,13 @@ def variable():
     match(["ID"])
 
 def operand():
-    match(["PLUS","DIVIDE","MINUS","ASTER"])
-    match(["ID","NUM"])
+    global tok
+
+    if tok == "O_PARENTHESES":
+        expression()
+    else:
+        match(["PLUS","DIVIDE","MINUS","ASTER"])
+        match(["ID","NUM"])
 
 def expression():
     #Opened es la variable de abrir
@@ -287,6 +292,7 @@ def expression():
         expression()
     else:
         match(["NUM","ID"])
+        
         if tok in ["PLUS","DIVIDE","MINUS","ASTER"]:
             operand()
 
@@ -352,7 +358,6 @@ def parse():
     global tok
     nextToken()
     stmt()
-
 
 #Funcion para hacer el output a HTML
 def output():
@@ -421,9 +426,9 @@ def output():
  
 
 inputFile("inputFileOne.txt")
-lexer(EXPf)
-print(tokenList)
-#getTokens(EXPfs)
+#lexer(EXPf)
+#print("Token List:",tokenList)
+getTokens(EXPfs)
 parse()
 output()
 
