@@ -132,7 +132,7 @@ def lexer(stringC):
         elif c == '=': 
             return EQUAL
 
-        elif c == '+': 
+        elif c == '-': 
             return MINUS_SIGN
 
         elif c == '*': 
@@ -144,14 +144,11 @@ def lexer(stringC):
         elif c == ')': 
             return RIGHT_PAR
 
-        elif c == '#': 
+        elif c == '\n': 
             return EOS
 
         elif c == ' ': 
             return SPACE
-
-        elif c == '\n': 
-            return EOS
         
         return UNKNOWN
 
@@ -182,10 +179,12 @@ def lexer(stringC):
                 shouldRead=True
             
             charType = getCharType(currentChar)
+            
             state = transitionMatrix[state][charType]
 
             if state < 100 and charType != SPACE and charType!=EOS:
                 lexeme+=currentChar
+                
 
         if lexeme != "":
             print(lexeme,state)
@@ -230,11 +229,11 @@ def lexer(stringC):
             tokenList.append("C_PARENTHESES")
             shouldRead=False
         
-        elif state == EQUAL:
+        elif state == ST_F_EQUAL:
             tokenList.append("EQUAL")
             shouldRead=False
 
-        elif state == ST_F_EQUAL:
+        elif state == ST_F_MINUS_SIGN:
             tokenList.append("MINUS")
             shouldRead=False
 
