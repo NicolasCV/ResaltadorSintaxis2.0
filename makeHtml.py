@@ -131,6 +131,7 @@ def assignment():
     match(["ID"])
     match(["EQUAL"])
     expression()
+
     if opened:
         ParseError("OPENED PARENTHESES NOT CLOSED")
 
@@ -144,16 +145,13 @@ def exprRest():
         if tok in ["INT","FLOAT"]:
             variable()
             exprRest()
-        
-        #VAR->TYPE ID
-        #TYPE-> "INT","FLOAT"
-        elif tok == "NUM":
-            expression()
-            exprRest()
 
         elif tok == "ID":
             assignment()
             exprRest()
+
+        #VAR->TYPE ID
+        #TYPE-> "INT","FLOAT"
 
         elif tok in ["PLUS","DIVIDE","MINUS","ASTER"]:
             operand()
@@ -163,8 +161,12 @@ def exprRest():
             match(["ERROR"])
             exprRest()
         
-        elif tok == ["EOF"]:
-            ''
+        elif tok == "END":
+            match(["END"])
+        
+        else:
+            ParseError("PARSE ERROR")
+
 
     else:
         print("ERROR")
@@ -183,7 +185,6 @@ def parse():
     global tok
     nextToken()
     stmt()
-    #match("END")
 
 
 #Funcion para hacer el output a HTML
@@ -197,6 +198,7 @@ def output():
         myFile.write('<link rel="stylesheet" href="mystyle.css">\n')
 
         programBegun=False
+        tokenList.pop()
 
         for i in range(len(EXPfs)):
             
@@ -215,7 +217,7 @@ def output():
 
             #Si hay dos IDs seguidas,hay un endline entre ellos o un numero antes, siempre y cuando este empezado el programa
             if tokenList[i] == "ID" and getCharType(EXPfs[i-1]) in ["ID","NUM"] and programBegun==True:
-                myFile.write("<br><span class='INDENT'></span>")          
+                myFile.write("<br><span class='INDENT'></span>\n")          
 
             #Imprime la linea con el texto y su respectiva clase
             line="<span class='{0}'>{1} ".format(tokenList[i],EXPfs[i])
