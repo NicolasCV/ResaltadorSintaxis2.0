@@ -11,7 +11,7 @@ tok=""
 tokenList=[]
 
 #Regresa que tipo de chartype es
-def getCharType(stringC):
+def getTokenType(stringC):
     if stringC == "int":
         return "INT"
 
@@ -47,7 +47,7 @@ def getCharType(stringC):
 
     elif stringC == "end":
         return "END"
-    
+
     elif stringC[-1] == ".":
         return "ERROR"
 
@@ -59,6 +59,8 @@ def getCharType(stringC):
 
     else:
         return "ERROR"
+    
+    
 
 #Se importa el file y se guarda en una variable global
 def inputFile(filename):
@@ -68,14 +70,174 @@ def inputFile(filename):
     EXPfile=open(filename)
     EXPf=EXPfile.read()
     EXPfs=EXPf.split()
-
-    for x in EXPfs:
-        tokenList.append(getCharType(x))
-
-    tokenList.append("EOF")
-
     EXPfile.flush()
     EXPfile.close()
+
+def getTokens(args):
+    global tokenList
+
+    for x in args:
+        tokenList.append(getTokenType(x))
+    tokenList.append("EOF")
+
+
+def lexer(stringC):
+
+    global tokenList,LexError
+
+    LETTER = int(0)
+    DIGIT = int(1)
+    POINT = int(2)
+    PLUS_SIGN = int(3)
+    MULT_SIGN = int(4)
+    LEFT_PAR = int(5)
+    RIGHT_PAR = int(6)
+    EQUAL = int(7)
+    MINUS_SIGN = int(8)
+    SPACE = int(9)
+    EOS = int(10)
+    UNKNOWN = int(-1)
+
+    def getCharType(c):
+
+        if c.isalpha(): 
+            return LETTER
+        
+        elif c.isdigit() : 
+            return DIGIT
+        
+        elif c == '.': 
+            return POINT
+
+        elif c == '+': 
+            return PLUS_SIGN
+        
+        elif c == '=': 
+            return EQUAL
+
+        elif c == '+': 
+            return MINUS_SIGN
+
+        elif c == '*': 
+            return MULT_SIGN
+
+        elif c == '(': 
+            return LEFT_PAR
+            
+        elif c == ')': 
+            return RIGHT_PAR
+
+        elif c == '#': 
+            return EOS
+
+        elif c == ' ': 
+            return SPACE
+        
+        return UNKNOWN
+
+
+    ST_INITIAL = int(0)
+    ST_ID = int(1)
+    ST_DIGIT = int(2)
+    ST_1ST_DIGIT = int(3)
+    ST_NEXT_DIGITS = int(4)
+    ST_F_ID = int(100)
+    ST_F_INT = int(101)
+    ST_F_FLOAT = int(102)
+    ST_F_PLUS_SIGN = int(103)
+    ST_F_MULT_SIGN = int(104)
+    ST_F_LEFT_PAR = int(105)
+    ST_F_RIGHT_PAR = int(106)
+    ST_F_EQUAL = int(107)
+    ST_F_MINUS_SIGN = int(108)
+    ST_ERROR = int(-1)
+
+    texts=[]
+
+    transitionMatrix = [[ST_ID,ST_DIGIT,ST_ERROR,ST_F_PLUS_SIGN,ST_F_MULT_SIGN,ST_F_LEFT_PAR,ST_F_RIGHT_PAR,ST_F_EQUAL,ST_F_MINUS_SIGN,ST_INITIAL,ST_INITIAL],
+                        [ST_ID,ST_ID,ST_ERROR,ST_F_ID,ST_F_ID,ST_F_ID,ST_F_ID,ST_F_ID,ST_F_ID,ST_F_ID,ST_F_ID],
+                        [ST_ERROR,ST_DIGIT,ST_1ST_DIGIT,ST_F_INT,ST_F_INT,ST_F_INT,ST_F_INT,ST_F_INT,ST_F_INT,ST_F_INT,ST_F_INT],
+                        [ST_ERROR,ST_NEXT_DIGITS,ST_ERROR,ST_ERROR,ST_ERROR,ST_ERROR,ST_ERROR,ST_ERROR,ST_ERROR,ST_ERROR,ST_ERROR],
+                        [ST_ERROR,ST_NEXT_DIGITS,ST_ERROR,ST_F_FLOAT,ST_F_FLOAT,ST_F_FLOAT,ST_F_FLOAT,ST_F_FLOAT,ST_F_FLOAT,ST_F_FLOAT,ST_F_FLOAT]]
+
+    lexeme=""
+    currentChar=''
+    idx=0
+    shouldRead=True
+
+    state = ST_INITIAL
+
+    while True:
+        while state != ST_ERROR and state < 100:
+            
+            if shouldRead:
+                currentChar = stringC[idx]
+                idx+=1
+            else:
+                shouldRead=True
+            
+            charType = getCharType(currentChar)
+            state = transitionMatrix[state][charType]
+
+            if state < 100 and charType != SPACE:
+                lexeme+=currentChar
+
+        if state == ST_F_ID:
+            if lexeme == "program":
+                tokenList.append("PROGRAM")
+
+            elif lexeme == "begin":
+                tokenList.append("BEGIN")
+
+            elif lexeme == "end":
+                tokenList.append("END")
+                exit()
+
+            else:
+                tokenList.append("ID")
+            
+            shouldRead=False
+
+        elif state == ST_F_INT:
+            tokenList.append("INT")
+            shouldRead=False
+
+        elif state == ST_F_FLOAT:
+            tokenList.append("FLOAT")
+            shouldRead=False
+
+        elif state ==ST_F_PLUS_SIGN:
+            tokenList.append("PLUS")
+            shouldRead=False
+
+        elif state == ST_F_MULT_SIGN:
+            tokenList.append("ASTER")
+            shouldRead=False
+
+        elif state == ST_F_LEFT_PAR:
+            tokenList.append("O_PARENTHESES")
+            shouldRead=False
+        
+        elif state == ST_F_RIGHT_PAR:
+            tokenList.append("C_PARENTHESES")
+            shouldRead=False
+        
+        elif state == EQUAL:
+            tokenList.append("EQUAL")
+            shouldRead=False
+
+        elif state == ST_F_EQUAL:
+            tokenList.append("MINUS")
+            shouldRead=False
+
+        elif state == ST_ERROR:
+            tokenList.append("ERROR") 
+            shouldRead=False  
+        
+        texts.append(lexeme)
+        lexeme = ""
+        state = ST_INITIAL
+
 
 #Funciones para el parser
 def ParseError(tok):
@@ -124,7 +286,6 @@ def expression():
             match("C_PARENTHESES")
             opened = False
 
-
 def assignment():
     global opened
     
@@ -134,7 +295,6 @@ def assignment():
 
     if opened:
         ParseError("OPENED PARENTHESES NOT CLOSED")
-
 
 def exprRest():
     global ParsingError,tok
@@ -171,7 +331,6 @@ def exprRest():
     else:
         print("ERROR")
     
-
 def stmt():
     #START=>PROGRAM ID BEING CODE END
     #CODE->E
@@ -208,7 +367,7 @@ def output():
 
             #Siempre que hay int,float,begin o end se pone un endline antes (excepto en la primera)
             if tokenList[i] in ["BEGIN","INT","FLOAT","END"]:
-                if getCharType(EXPfs[i-1]) != "BEGIN":
+                if getTokenType(EXPfs[i-1]) != "BEGIN":
                     myFile.write('<br>')
 
             #Se abre el header para el end 
@@ -216,7 +375,7 @@ def output():
                 myFile.write('<h3>') 
 
             #Si hay dos IDs seguidas,hay un endline entre ellos o un numero antes, siempre y cuando este empezado el programa
-            if tokenList[i] == "ID" and getCharType(EXPfs[i-1]) in ["ID","NUM"] and programBegun==True:
+            if tokenList[i] == "ID" and getTokenType(EXPfs[i-1]) in ["ID","NUM"] and programBegun==True:
                 myFile.write("<br><span class='INDENT'></span>\n")          
 
             #Imprime la linea con el texto y su respectiva clase
@@ -254,6 +413,9 @@ def output():
  
 
 inputFile("inputFileOne.txt")
+lexer(EXPf)
+print(tokenList)
+#getTokens(EXPfs)
 parse()
 output()
 
