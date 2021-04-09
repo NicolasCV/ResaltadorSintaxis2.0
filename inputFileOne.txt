@@ -1,8 +1,10 @@
  program MiPrograma123
- begin   
+ begin 
+    a = ( 1 + 1 ) + ( 1 / 1.2 )
     int a
     int b2
-    a = ( 1 + 1 )
+    a = ( 1 + 1 ) + 5
+    a = ( 1 + 1 ) + ( 1 )
     int carrito
     a = 10
     b = 2 + a

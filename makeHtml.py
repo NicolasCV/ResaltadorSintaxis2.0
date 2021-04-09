@@ -262,7 +262,7 @@ def nextToken():
 
 def match(tokens):
     global tok,counter
-    print(counter-1,tok,tokens)
+    #print(counter-1,tok,tokens)
 
     if tok in tokens:
         nextToken()
@@ -276,10 +276,11 @@ def variable():
 def operand():
     global tok
 
+    match(["PLUS","DIVIDE","MINUS","ASTER"])
+
     if tok == "O_PARENTHESES":
         expression()
     else:
-        match(["PLUS","DIVIDE","MINUS","ASTER"])
         match(["ID","NUM"])
 
 def expression():
@@ -388,8 +389,11 @@ def output():
                 myFile.write('<h3>') 
 
             #Si hay dos IDs seguidas,hay un endline entre ellos o un numero antes, siempre y cuando este empezado el programa
-            if tokenList[i] == "ID" and getTokenType(EXPfs[i-1]) in ["ID","NUM"] and programBegun==True:
-                myFile.write("<br><span class='INDENT'></span>\n")          
+            if tokenList[i] == "ID" and getTokenType(EXPfs[i-1]) in ["ID","NUM"] and programBegun==True or getTokenType(EXPfs[i-1]) == "BEGIN":
+                if getTokenType(EXPfs[i-1]) != "BEGIN":
+                    myFile.write("<br>")
+
+                myFile.write("<span class='INDENT'></span>\n")          
 
             #Imprime la linea con el texto y su respectiva clase
             line="<span class='{0}'>{1} ".format(tokenList[i],EXPfs[i])
@@ -426,9 +430,9 @@ def output():
  
 
 inputFile("inputFileOne.txt")
-#lexer(EXPf)
-#print("Token List:",tokenList)
-getTokens(EXPfs)
+lexer(EXPf)
+print("Token List:",tokenList)
+#getTokens(EXPfs)
 parse()
 output()
 
