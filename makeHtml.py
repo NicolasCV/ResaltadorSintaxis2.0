@@ -83,7 +83,7 @@ def getTokens(args):
 
 def lexer(stringC):
 
-    global tokenList,LexError
+    global tokenList,LexError,texts
 
     LETTER = int(0)
     DIGIT = int(1)
@@ -132,6 +132,9 @@ def lexer(stringC):
 
         elif c == ' ': 
             return SPACE
+
+        elif c == '\n': 
+            return EOS
         
         return UNKNOWN
 
@@ -169,7 +172,9 @@ def lexer(stringC):
 
     while True:
         while state != ST_ERROR and state < 100:
-            
+            if idx == len(stringC):
+                exit()
+
             if shouldRead:
                 currentChar = stringC[idx]
                 idx+=1
@@ -181,6 +186,9 @@ def lexer(stringC):
 
             if state < 100 and charType != SPACE:
                 lexeme+=currentChar
+
+        if lexeme != "":
+            print(lexeme,state)
 
         if state == ST_F_ID:
             if lexeme == "program":
