@@ -3,7 +3,7 @@ begin
     int a
     a = 1.3
     b = 3 / 4.3
-    int a + 1 / 4
+    int a
     int b2
     a = ( 1 + 1 ) - a
     a = ( 1 + 1 ) + ( 1 )
