@@ -82,8 +82,8 @@ def getTokens(args):
 
 
 def lexer(stringC):
-
     global tokenList,LexError,texts
+    stringC+=' '
 
     LETTER = int(0)
     DIGIT = int(1)
@@ -172,13 +172,15 @@ def lexer(stringC):
     while True:
         while state != ST_ERROR and state < 100:
             if idx == len(stringC):
-                break
+                return
 
             if shouldRead:
                 currentChar = stringC[idx]
                 idx+=1
+                
             else:
                 shouldRead=True
+            
             
             charType = getCharType(currentChar)
             
@@ -186,8 +188,6 @@ def lexer(stringC):
 
             if state < 100 and charType != SPACE and charType!=EOS:
                 lexeme+=currentChar
-            
-            print(state,charType)
 
         if state == ST_F_ID:
             if lexeme == "program":
@@ -198,7 +198,9 @@ def lexer(stringC):
 
             elif lexeme == "end":
                 tokenList.append("END")
-                break
+                tokenList.append("EOF")
+                texts.append("end")
+                return
             
             elif lexeme == "int":
                 tokenList.append("INT")
@@ -225,50 +227,47 @@ def lexer(stringC):
         elif state ==ST_F_PLUS_SIGN:
             lexeme+=currentChar
             tokenList.append("PLUS")
-            shouldRead=False
     
 
         elif state == ST_F_MULT_SIGN:
             lexeme+=currentChar
             tokenList.append("ASTER")
-            shouldRead=False
 
 
         elif state == ST_F_LEFT_PAR:
             lexeme+=currentChar
             tokenList.append("O_PARENTHESES")
-            shouldRead=False
 
         
         elif state == ST_F_RIGHT_PAR:
             lexeme+=currentChar
             tokenList.append("C_PARENTHESES")
-            shouldRead=False
 
         
         elif state == ST_F_EQUAL:
             lexeme+=currentChar
             tokenList.append("EQUAL")
-            shouldRead=False
 
 
         elif state == ST_F_MINUS_SIGN:
             lexeme+=currentChar
             tokenList.append("MINUS")
-            shouldRead=False
+            
 
 
         elif state == ST_ERROR:
             lexeme+=currentChar
             tokenList.append("ERROR") 
-            shouldRead=False 
+            LexError=True
         
         #elif state == ST_F_DIVIDE:
         #    tokenList.append("DIVIDE") 
         #    shouldRead=False 
+        
+        if lexeme != '':
+            texts.append(lexeme)
 
-        texts.append(lexeme)
-        lexeme = ""
+        lexeme = ''
         state = ST_INITIAL
 
 
@@ -285,8 +284,9 @@ def ParseError(tok):
 
 def nextToken():
     global counter,tok,tokenList
-    tok = tokenList[counter]
-    counter+=1
+    if counter < len(tokenList):
+        tok = tokenList[counter]
+        counter+=1
 
 def match(tokens):
     global tok,counter
@@ -390,7 +390,7 @@ def parse():
 
 #Funcion para hacer el output a HTML
 def output():
-    global ParsingError,LexError, EXPfs,tokenList
+    global ParsingError,LexError, EXPfs,texts
 
     #Se abre el html en el que se pondra
     with open(R"output.html","w") as myFile:
@@ -401,30 +401,29 @@ def output():
         programBegun=False
         tokenList.pop()
 
-        for i in range(len(EXPfs)):
+        for i in range(len(tokenList)):
             
             #Se comienza el primer header con programa,id,begin
             if tokenList[i] == "PROGRAM":
                 myFile.write('<h3>')
 
-            #Siempre que hay int,float,begin o end se pone un endline antes (excepto en la primera)
-            if tokenList[i] in ["BEGIN","INT","FLOAT","END"]:
-                if getTokenType(EXPfs[i-1]) != "BEGIN":
-                    myFile.write('<br>')
-
-            #Se abre el header para el end 
             if tokenList[i] == "END":
                 myFile.write('<h3>') 
+            
+            if (tokenList[i] == "ID" and tokenList[i-1] in ["ID","NUM"]):
+                myFile.write("<br>")
+                myFile.write("<span class='INDENT'></span>\n")  
 
-            #Si hay dos IDs seguidas,hay un endline entre ellos o un numero antes, siempre y cuando este empezado el programa
-            if tokenList[i] == "ID" and getTokenType(EXPfs[i-1]) in ["ID","NUM"] and programBegun==True or getTokenType(EXPfs[i-1]) == "BEGIN":
-                if getTokenType(EXPfs[i-1]) != "BEGIN":
-                    myFile.write("<br>")
+            elif tokenList[i] == "ID" and tokenList[i+1] == "EQUAL":
+                myFile.write("<span class='INDENT'></span>\n")  
 
-                myFile.write("<span class='INDENT'></span>\n")          
+            #Siempre que hay int,float,begin o end se pone un endline antes (excepto en la primera)
+            elif tokenList[i] in ["BEGIN","INT","FLOAT","END"]:
+                if getTokenType(tokenList[i-1]) != "BEGIN":
+                    myFile.write('<br>')     
 
             #Imprime la linea con el texto y su respectiva clase
-            line="<span class='{0}'>{1} ".format(tokenList[i],EXPfs[i])
+            line="<span class='{0}'>{1} ".format(tokenList[i],texts[i])
             myFile.write(line)
 
             #Se cierra el primer header con programa,id,begin y se comienza el codigo
@@ -441,9 +440,6 @@ def output():
             #Se cierra el span
             myFile.write('</span>\n')
 
-            if tokenList[i]=="ERROR":
-                LexError=True
-
         #Da los errores abajo de todo el programa para que el usuario sepa que hubo error
         if ParsingError:
             myFile.write('<h1><span class=FormatERROR>Parsing ERROR</span></h1>')
@@ -459,8 +455,10 @@ def output():
 
 inputFile("inputFileOne.txt")
 lexer(EXPf)
-print("Token List:",tokenList)
-#getTokens(EXPfs)
+
+for i in range(len(texts)):
+    print(texts[i],tokenList[i])
+
 parse()
 output()
 
