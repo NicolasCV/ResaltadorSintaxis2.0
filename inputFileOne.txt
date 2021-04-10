@@ -1,7 +1,8 @@
 program MiPrograma123
 begin
     int a
-    a = ( 1 + 1 ) + ( 1 / 1.2 )
+    a = 1
+    b = 3 + 4
     int a
     int b2
     a = ( 1 + 1 ) + 5

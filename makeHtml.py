@@ -94,6 +94,7 @@ def lexer(stringC):
     RIGHT_PAR = int(6)
     EQUAL = int(7)
     MINUS_SIGN = int(8)
+    #DIVIDE = int(9)
     SPACE = int(9)
     EOS = int(10)
     UNKNOWN = int(-1)
@@ -113,6 +114,7 @@ def lexer(stringC):
     ST_F_RIGHT_PAR = int(106)
     ST_F_EQUAL = int(107)
     ST_F_MINUS_SIGN = int(108)
+    #ST_F_DIVIDE = int(108)
     ST_ERROR = int(-1)
 
     def getCharType(c):
@@ -151,77 +153,6 @@ def lexer(stringC):
             return SPACE
         
         return UNKNOWN
-
-    def lexCheck(lexeme):
-        global tokenList,shouldRead
-        print(lexeme)
-        if lexeme != "":
-            if state == ST_F_ID:
-                if lexeme == "program":
-                    tokenList.append("PROGRAM")
-
-                elif lexeme == "begin":
-                    tokenList.append("BEGIN")
-
-                elif lexeme == "end":
-                    tokenList.append("END")
-                
-                elif lexeme == "int":
-                    tokenList.append("INT")
-
-                elif lexeme == "float":
-                    tokenList.append("FLOAT")
-
-                else:
-                    tokenList.append("ID")
-                
-                shouldRead=False
-        
-
-            elif state == ST_F_INT:
-                tokenList.append("NUM")
-                shouldRead=False
-            
-
-            elif state == ST_F_FLOAT:
-                tokenList.append("NUM")
-                shouldRead=False
-            
-
-            elif state ==ST_F_PLUS_SIGN:
-                tokenList.append("PLUS")
-                shouldRead=False
-        
-
-            elif state == ST_F_MULT_SIGN:
-                tokenList.append("ASTER")
-                shouldRead=False
-
-
-            elif state == ST_F_LEFT_PAR:
-                tokenList.append("O_PARENTHESES")
-                shouldRead=False
-
-            
-            elif state == ST_F_RIGHT_PAR:
-                tokenList.append("C_PARENTHESES")
-                shouldRead=False
-
-            
-            elif state == ST_F_EQUAL:
-                tokenList.append("EQUAL")
-                shouldRead=False
-
-
-            elif state == ST_F_MINUS_SIGN:
-                tokenList.append("MINUS")
-                shouldRead=False
-
-
-            elif state == ST_ERROR:
-                tokenList.append("ERROR") 
-                shouldRead=False 
-        
     
     texts=[]
 
@@ -235,10 +166,8 @@ def lexer(stringC):
     currentChar=''
     idx=0
     shouldRead=True
-    crashCounter=0
 
     state = ST_INITIAL
-    print(transitionMatrix[0][7])
 
     while True:
         while state != ST_ERROR and state < 100:
@@ -252,26 +181,98 @@ def lexer(stringC):
                 shouldRead=True
             
             charType = getCharType(currentChar)
-
-            if crashCounter < 100:
-                print(state,charType)
-                crashCounter+=1
             
             state = transitionMatrix[state][charType]
 
             if state < 100 and charType != SPACE and charType!=EOS:
                 lexeme+=currentChar
+            
+            print(state,charType)
 
-        lexCheck(lexeme)
-        texts.append(lexeme)
+        if state == ST_F_ID:
+            if lexeme == "program":
+                tokenList.append("PROGRAM")
 
-        if lexeme == "end":
+            elif lexeme == "begin":
+                tokenList.append("BEGIN")
+
+            elif lexeme == "end":
+                tokenList.append("END")
                 break
-        else:
-            lexeme = ""
+            
+            elif lexeme == "int":
+                tokenList.append("INT")
 
+            elif lexeme == "float":
+                tokenList.append("FLOAT")
+
+            else:
+                tokenList.append("ID")
+            
+            shouldRead=False
+    
+
+        elif state == ST_F_INT:
+            tokenList.append("NUM")
+            shouldRead=False
+        
+
+        elif state == ST_F_FLOAT:
+            tokenList.append("NUM")
+            shouldRead=False
+        
+
+        elif state ==ST_F_PLUS_SIGN:
+            lexeme+=currentChar
+            tokenList.append("PLUS")
+            shouldRead=False
+    
+
+        elif state == ST_F_MULT_SIGN:
+            lexeme+=currentChar
+            tokenList.append("ASTER")
+            shouldRead=False
+
+
+        elif state == ST_F_LEFT_PAR:
+            lexeme+=currentChar
+            tokenList.append("O_PARENTHESES")
+            shouldRead=False
+
+        
+        elif state == ST_F_RIGHT_PAR:
+            lexeme+=currentChar
+            tokenList.append("C_PARENTHESES")
+            shouldRead=False
+
+        
+        elif state == ST_F_EQUAL:
+            lexeme+=currentChar
+            tokenList.append("EQUAL")
+            shouldRead=False
+
+
+        elif state == ST_F_MINUS_SIGN:
+            lexeme+=currentChar
+            tokenList.append("MINUS")
+            shouldRead=False
+
+
+        elif state == ST_ERROR:
+            lexeme+=currentChar
+            tokenList.append("ERROR") 
+            shouldRead=False 
+        
+        #elif state == ST_F_DIVIDE:
+        #    tokenList.append("DIVIDE") 
+        #    shouldRead=False 
+
+        texts.append(lexeme)
+        lexeme = ""
         state = ST_INITIAL
 
+
+#Parentesis abierto o no, para el parser
 opened = False
 
 #Funciones para el parser
