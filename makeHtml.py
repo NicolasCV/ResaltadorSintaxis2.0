@@ -94,9 +94,9 @@ def lexer(stringC):
     RIGHT_PAR = int(6)
     EQUAL = int(7)
     MINUS_SIGN = int(8)
-    #DIVIDE = int(9)
-    SPACE = int(9)
-    EOS = int(10)
+    DIVIDE = int(9)
+    SPACE = int(10)
+    EOS = int(11)
     UNKNOWN = int(-1)
 
 
@@ -114,7 +114,7 @@ def lexer(stringC):
     ST_F_RIGHT_PAR = int(106)
     ST_F_EQUAL = int(107)
     ST_F_MINUS_SIGN = int(108)
-    #ST_F_DIVIDE = int(108)
+    ST_F_DIVIDE = int(109)
     ST_ERROR = int(-1)
 
     def getCharType(c):
@@ -146,6 +146,9 @@ def lexer(stringC):
         elif c == ')': 
             return RIGHT_PAR
 
+        elif c == '/': 
+            return DIVIDE
+
         elif c == '\n': 
             return EOS
 
@@ -156,11 +159,11 @@ def lexer(stringC):
     
     texts=[]
 
-    transitionMatrix = [[ST_ID,ST_DIGIT,ST_ERROR,ST_F_PLUS_SIGN,ST_F_MULT_SIGN,ST_F_LEFT_PAR,ST_F_RIGHT_PAR,ST_F_EQUAL,ST_F_MINUS_SIGN,ST_INITIAL,ST_INITIAL],
-                        [ST_ID,ST_ID,ST_ERROR,ST_F_ID,ST_F_ID,ST_F_ID,ST_F_ID,ST_F_ID,ST_F_ID,ST_F_ID,ST_F_ID],
-                        [ST_ERROR,ST_DIGIT,ST_1ST_DIGIT,ST_F_INT,ST_F_INT,ST_F_INT,ST_F_INT,ST_F_INT,ST_F_INT,ST_F_INT,ST_F_INT],
-                        [ST_ERROR,ST_NEXT_DIGITS,ST_ERROR,ST_ERROR,ST_ERROR,ST_ERROR,ST_ERROR,ST_ERROR,ST_ERROR,ST_ERROR,ST_ERROR],
-                        [ST_ERROR,ST_NEXT_DIGITS,ST_ERROR,ST_F_FLOAT,ST_F_FLOAT,ST_F_FLOAT,ST_F_FLOAT,ST_F_FLOAT,ST_F_FLOAT,ST_F_FLOAT,ST_F_FLOAT]]
+    transitionMatrix = [[ST_ID,ST_DIGIT,ST_ERROR,ST_F_PLUS_SIGN,ST_F_MULT_SIGN,ST_F_LEFT_PAR,ST_F_RIGHT_PAR,ST_F_EQUAL,ST_F_MINUS_SIGN,ST_F_DIVIDE,ST_INITIAL,ST_INITIAL],
+                        [ST_ID,ST_ID,ST_ERROR,ST_F_ID,ST_F_ID,ST_F_ID,ST_F_ID,ST_F_ID,ST_F_ID,ST_F_ID,ST_F_ID,ST_F_ID],
+                        [ST_ERROR,ST_DIGIT,ST_1ST_DIGIT,ST_F_INT,ST_F_INT,ST_F_INT,ST_F_INT,ST_F_INT,ST_F_INT,ST_F_INT,ST_F_INT,ST_F_INT],
+                        [ST_ERROR,ST_NEXT_DIGITS,ST_ERROR,ST_ERROR,ST_ERROR,ST_ERROR,ST_ERROR,ST_ERROR,ST_ERROR,ST_ERROR,ST_ERROR,ST_ERROR],
+                        [ST_ERROR,ST_NEXT_DIGITS,ST_ERROR,ST_F_FLOAT,ST_F_FLOAT,ST_F_FLOAT,ST_F_FLOAT,ST_F_FLOAT,ST_F_FLOAT,ST_F_FLOAT,ST_F_FLOAT,ST_F_FLOAT]]
 
     lexeme=""
     currentChar=''
@@ -252,8 +255,10 @@ def lexer(stringC):
         elif state == ST_F_MINUS_SIGN:
             lexeme+=currentChar
             tokenList.append("MINUS")
-            
-
+        
+        elif state == ST_F_DIVIDE:
+            lexeme+=currentChar
+            tokenList.append("DIVIDE")
 
         elif state == ST_ERROR:
             lexeme+=currentChar
