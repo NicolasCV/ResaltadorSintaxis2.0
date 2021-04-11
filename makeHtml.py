@@ -276,16 +276,29 @@ def lexer(stringC):
         state = ST_INITIAL
 
 
-#Parentesis abierto o no, para el parser
-opened = False
+def close():
+    global ParsingError,LexError,outputHTML
+
+    if ParsingError:
+        outputHTML.write("\n<h3><span class = 'FormatERROR'>Parsing Error</span></h3><br>")
+    
+    if LexError:
+        outputHTML.write("\n<h3><span class = 'ERROR'>Lexing Error</span></h3><br>")
+
+
+    outputHTML.write('</body>')
+    outputHTML.write('</html>')
+    outputHTML.close()
+
 
 #Funciones para el parser
 def ParseError(tok):
-    global ParsingError,counter,tokenList
+    global ParsingError,counter,tokenList,outputHTML
     ParsingError = True
     tokenList[counter-1]="FormatERROR"
     tokenList[counter-2]="FormatERROR"
     print("Error in token:",tok,"["+str(counter-1)+"]")
+    close()
 
 def nextToken():
     global counter,tok,tokenList
@@ -384,9 +397,7 @@ def start():
 
     code()
 
-    outputHTML.write('</body>')
-    outputHTML.write('</html>')
-    outputHTML.close()
+    close()
 
 #Parser que lanza error si esta mal el formato
 def parse():
@@ -406,7 +417,6 @@ def output():
 
     tokenList.pop()
 
- 
 
 inputFile("inputFileOne.txt")
 lexer(EXPf)
