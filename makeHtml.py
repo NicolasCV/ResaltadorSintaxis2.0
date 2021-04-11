@@ -294,8 +294,11 @@ def nextToken():
         counter+=1
 
 def match(tokens):
-    global tok,counter
+    global tok,counter,outputHTML
     #print(counter-1,tok,tokens)
+
+    line="<span class='{0}'>{1} </span>".format(tokenList[counter-1],texts[counter-1])
+    outputHTML.write(line)
 
     if tok in tokens:
         nextToken()
@@ -303,169 +306,118 @@ def match(tokens):
         ParseError(tok)
 
 def variable():
+    global outputHTML
     match(["INT","FLOAT"])
     match(["ID"])
 
 def operand():
-    global tok
+    global tok,outputHTML
 
-    match(["PLUS","DIVIDE","MINUS","ASTER"])
+    if tok in ["NUM","ID"]:
+        match(["NUM","ID"])
 
-    if tok == "O_PARENTHESES":
-        expression()
     else:
-        match(["ID","NUM"])
+        match("O_PARENTHESES")
+        expression()
+        match("C_PARENTHESES")
+
 
 def expression():
-    #Opened es la variable de abrir
-    global tok,opened
-    
-    if tok == "O_PARENTHESES":
-        match("O_PARENTHESES")
-        opened = True
-        expression()
-    else:
-        match(["NUM","ID"])
-        
-        if tok in ["PLUS","DIVIDE","MINUS","ASTER"]:
-            operand()
+    global outputHTML
+    operand()
+    exprRest()
 
-        if tok == "C_PARENTHESES" and opened:
-            match("C_PARENTHESES")
-            opened = False
+def exprRest():
+    global tok,outputHTML
+
+    if tok in ["PLUS","DIVIDE","MINUS","ASTER"]:
+        match(["PLUS","DIVIDE","MINUS","ASTER"])
+        operand()
+        exprRest()
+
 
 def assignment():
-    global opened
+    global outputHTML
     
     match(["ID"])
     match(["EQUAL"])
     expression()
 
-    if opened:
-        ParseError("OPENED PARENTHESES NOT CLOSED")
 
-def exprRest():
-    global ParsingError,tok
+def code():
+    global ParsingError,tok,outputHTML
     
     if not ParsingError:
+        outputHTML.write("\n<br>")
 
-        #CODE->VAR CODE
         if tok in ["INT","FLOAT"]:
+            outputHTML.write("<span class='INDENT'></span>\n")
             variable()
-            exprRest()
+            code()
 
         elif tok == "ID":
+            outputHTML.write("<span class='INDENT'></span>\n")
             assignment()
-            exprRest()
+            code()
 
-        #VAR->TYPE ID
-        #TYPE-> "INT","FLOAT"
-
-        elif tok in ["PLUS","DIVIDE","MINUS","ASTER"]:
-            operand()
-            exprRest()
-
-        elif tok == "ERROR":
-            match(["ERROR"])
-            exprRest()
-        
         elif tok == "END":
-            match(["END"])
+            outputHTML.write('<br><h3>')
+            match("END")
+            outputHTML.write('</h3>')
         
         else:
-            ParseError("PARSE ERROR")
+            ParseError(tok)
 
-
-    else:
-        print("ERROR")
     
-def stmt():
-    #START=>PROGRAM ID BEING CODE END
-    #CODE->E
+def start():
+    global outputHTML
+
+    outputHTML.write('<h3>')
     match("PROGRAM")
     match("ID")
+    
+    outputHTML.write('<br>')
+    
     match("BEGIN")
-    exprRest()
+    
+    outputHTML.write('</h3>\n')
+
+    code()
+
+    outputHTML.write('</body>')
+    outputHTML.write('</html>')
+    outputHTML.close()
 
 #Parser que lanza error si esta mal el formato
 def parse():
     global tok
     nextToken()
-    stmt()
+    start()
 
 #Funcion para hacer el output a HTML
 def output():
-    global ParsingError,LexError, EXPfs,texts
+    global ParsingError,LexError, EXPfs,texts,outputHTML
 
     #Se abre el html en el que se pondra
-    with open(R"output.html","w") as myFile:
-        myFile.write('<html>\n')
-        myFile.write('<body style="background-color:black">\n')
-        myFile.write('<link rel="stylesheet" href="mystyle.css">\n')
+    outputHTML = open(R"output.html","w") 
+    outputHTML.write('<html>\n')
+    outputHTML.write('<body style="background-color:black">\n')
+    outputHTML.write('<link rel="stylesheet" href="mystyle.css">\n')
 
-        programBegun=False
-        tokenList.pop()
+    tokenList.pop()
 
-        for i in range(len(tokenList)):
-            
-            #Se comienza el primer header con programa,id,begin
-            if tokenList[i] == "PROGRAM":
-                myFile.write('<h3>')
-
-            if tokenList[i] == "END":
-                myFile.write('<h3>') 
-            
-            if (tokenList[i] == "ID" and tokenList[i-1] in ["ID","NUM"]):
-                myFile.write("<br>")
-                myFile.write("<span class='INDENT'></span>\n")  
-
-            elif tokenList[i] == "ID" and tokenList[i+1] == "EQUAL":
-                myFile.write("<span class='INDENT'></span>\n")  
-
-            #Siempre que hay int,float,begin o end se pone un endline antes (excepto en la primera)
-            elif tokenList[i] in ["BEGIN","INT","FLOAT","END"]:
-                if getTokenType(tokenList[i-1]) != "BEGIN":
-                    myFile.write('<br>')     
-
-            #Imprime la linea con el texto y su respectiva clase
-            line="<span class='{0}'>{1} ".format(tokenList[i],texts[i])
-            myFile.write(line)
-
-            #Se cierra el primer header con programa,id,begin y se comienza el codigo
-            if tokenList[i] == "BEGIN":
-                myFile.write('</span></h3>\n')
-                programBegun=True
-                continue
-            
-            #Se cierra el header para el end
-            if tokenList[i] == "END":
-                myFile.write('</h3>')
-                continue
-            
-            #Se cierra el span
-            myFile.write('</span>\n')
-
-        #Da los errores abajo de todo el programa para que el usuario sepa que hubo error
-        if ParsingError:
-            myFile.write('<h1><span class=FormatERROR>Parsing ERROR</span></h1>')
-
-        if LexError:
-            myFile.write('<h1><span class=ERROR>Syntaxis ERROR</span></h1>')
-
-        #Se cierra el programa
-        myFile.write('</body>')
-        myFile.write('</html>')
-        myFile.close()
  
 
 inputFile("inputFileOne.txt")
 lexer(EXPf)
 
-for i in range(len(texts)):
-    print(texts[i],tokenList[i])
+#for i in range(len(texts)):
+#    print(texts[i],tokenList[i])
 
-parse()
 output()
+parse()
+
+
 
 
 
