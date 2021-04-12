@@ -165,10 +165,10 @@ def lexer(stringC):
                         [ST_ERROR,ST_NEXT_DIGITS,ST_ERROR,ST_ERROR,ST_ERROR,ST_ERROR,ST_ERROR,ST_ERROR,ST_ERROR,ST_ERROR,ST_ERROR,ST_ERROR],
                         [ST_ERROR,ST_NEXT_DIGITS,ST_ERROR,ST_F_FLOAT,ST_F_FLOAT,ST_F_FLOAT,ST_F_FLOAT,ST_F_FLOAT,ST_F_FLOAT,ST_F_FLOAT,ST_F_FLOAT,ST_F_FLOAT]]
 
-    lexeme=""
-    currentChar=''
-    idx=0
-    shouldRead=True
+    lexeme = ""
+    currentChar = ''
+    idx = 0
+    shouldRead = True
 
     state = ST_INITIAL
 
@@ -182,7 +182,7 @@ def lexer(stringC):
                 idx+=1
                 
             else:
-                shouldRead=True
+                shouldRead = True
             
             
             charType = getCharType(currentChar)
