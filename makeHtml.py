@@ -289,6 +289,7 @@ def close():
     outputHTML.write('</body>')
     outputHTML.write('</html>')
     outputHTML.close()
+    exit()
 
 
 #Funciones para el parser
